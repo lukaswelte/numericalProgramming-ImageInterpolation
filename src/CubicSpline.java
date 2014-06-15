@@ -43,7 +43,7 @@ public class CubicSpline implements InterpolationMethod {
         this.a = a;
         this.b = b;
         this.n = n;
-        h = ((double) b - a) / (n);
+        h = (b - a) / (n);
 
         this.y = Arrays.copyOf(y, n + 1);
 
@@ -91,7 +91,42 @@ public class CubicSpline implements InterpolationMethod {
      * berechnet werden muessen.
      */
     public void computeDerivatives() {
-        /* TODO: diese Methode ist zu implementieren */
+        int n = yprime.length - 1;
+        int len = n + 1;
+        double right[] = new double[len];
+        double a[] = new double[len];
+        double b[] = new double[len];
+
+        for (int i = 2; i <= n - 2; i++) {
+            right[i] = ((y[i + 1] - y[i - 1]) * 3) / h;
+        }
+        right[1] = ((y[2] - y[0] - ((h / 3) * yprime[0])) * 3) / h;
+        right[n - 1] = ((y[n] - y[n - 2] - ((h / 3) * yprime[n])) * 3) / h;
+
+        //trivial zur Berechnung von yprime[1]:
+        a[0] = 0;
+        b[0] = 1;
+
+        a[1] = right[1];
+        b[1] = -4;
+
+        for (int i = 2; i <= n - 2; i++) {
+            a[i] = right[i] - 4 * a[i - 1];
+            b[i] = -1 - 4 * b[i - 1];
+        }
+
+        a[n - 1] = (right[n - 1] - a[n - 3]) / 4;
+        b[n - 1] = -b[n - 3] / 4;
+
+        // die letzten beiden Zeilen berechnen BEIDE y[n-1] in Abhängigkeit von y[1]
+        // => y1 berechnen durch Gleichsetzen
+        yprime[1] = (a[n - 1] - a[n - 2]) / (b[n - 2] - b[n - 1]);
+
+        // wir haben ja schon alles in Abhängigkeit von y1
+
+        for (int i = 2; i <= n - 1; i++) {
+            yprime[i] = a[i - 1] + b[i - 1] * yprime[1];
+        }
     }
 
     /**
@@ -102,7 +137,26 @@ public class CubicSpline implements InterpolationMethod {
      */
     @Override
     public double evaluate(double z) {
-		/* TODO: diese Methode ist zu implementieren */
-        return 0.0;
+        if (z <= a) {
+            return y[0];
+        }
+        if (z >= b) {
+            return y[n];
+        }
+
+        int i = 0;
+        while (a + h * (i + 1) < z) {
+            i++;
+        }
+
+        z = (z - (a + i * h)) / (h);
+
+        double zPower3 = Math.pow(z, 3);
+        double zPower2 = Math.pow(z, 2);
+
+        return (y[i] * ((1 - (3 * zPower2)) + (2 * zPower3))) +
+                (y[i + 1] * ((3 * zPower2) - (2 * zPower3))) +
+                (h * yprime[i] * ((z - (2 * zPower2)) + zPower3)) +
+                (h * yprime[i + 1] * (-zPower2 + zPower3));
     }
 }

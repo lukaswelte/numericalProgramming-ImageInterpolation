@@ -91,8 +91,28 @@ public class LinearInterpolation implements InterpolationMethod {
      */
     @Override
     public double evaluate(double z) {
-        /* TODO: diese Methode ist zu implementieren */
-        return 0.0;
+        if (z < x[0]) {
+            return y[0];
+        }
+        if (z > x[x.length - 1]) {
+            return y[y.length - 1];
+        }
+
+        int i = 1;
+        while (z > x[i]) {
+            i++;
+        }
+
+        double x1 = x[i - 1];
+        double x2 = x[i];
+        double y1 = y[i - 1];
+        double y2 = y[i];
+        //durch "0" teilen wird ausgeschlossen,
+        //da von gültigem Abstand zw. stützstellen ausgegangen wird
+        double m = (y1 - y2) / (x1 - x2);
+
+        double b = y1 - (m * x1);
+        return (m * z) + b;
     }
 
 }

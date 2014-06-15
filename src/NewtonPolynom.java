@@ -85,7 +85,20 @@ public class NewtonPolynom implements InterpolationMethod {
      * Es gilt immer: x und y sind gleich lang.
      */
     private void computeCoefficients(double[] y) {
-        /* TODO: diese Methode ist zu implementieren */
+        int yLength = y.length;
+        a = new double[yLength];
+        f = new double[yLength];
+
+        System.arraycopy(y, 0, f, 0, yLength);
+
+        for (int n = 1; n < yLength; n++) {
+            a[n - 1] = f[0];
+            for (int m = 0; m <= yLength - n - 1; m++) {
+                f[m] = (f[m + 1] - f[m]) / (x[m + n] - x[m]);
+            }
+        }
+
+        a[yLength - 1] = f[0];
     }
 
     /**
@@ -117,7 +130,27 @@ public class NewtonPolynom implements InterpolationMethod {
      * @param y_new neuer Stuetzwert
      */
     public void addSamplingPoint(double x_new, double y_new) {
-		/* TODO: diese Methode ist zu implementieren */
+        int xLength = x.length;
+        int arrayLength = xLength + 1;
+        double[] b = new double[arrayLength];
+        double[] g = new double[arrayLength];
+        double[] z = new double[arrayLength];
+        for (int i = 0; i < xLength; i++) {
+            b[i] = a[i];
+            g[i] = f[i];
+            z[i] = x[i];
+        }
+        z[z.length - 1] = x_new;
+        x = z;
+        a = b;
+        f = g;
+        f[f.length - 1] = y_new;
+
+        for (int m = xLength - 2; m >= 0; m--) {
+            f[m] = (f[m + 1] - f[m]) / (x[m + (xLength - 1 - m)] - x[m]);
+        }
+
+        a[xLength - 1] = f[0];
     }
 
     /**
@@ -127,7 +160,11 @@ public class NewtonPolynom implements InterpolationMethod {
      */
     @Override
     public double evaluate(double z) {
-		/* TODO: diese Methode ist zu implementieren */
-        return 0.0;
+        int xLength = x.length;
+        double res = a[xLength - 1];
+        for (int i = xLength - 2; i >= 0; i--) {
+            res = res * (z - x[i]) + a[i];
+        }
+        return res;
     }
 }
