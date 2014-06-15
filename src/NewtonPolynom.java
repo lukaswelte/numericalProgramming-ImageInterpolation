@@ -163,7 +163,7 @@ public class NewtonPolynom implements InterpolationMethod {
         int xLength = x.length;
         double res = a[xLength - 1];
         for (int i = xLength - 2; i >= 0; i--) {
-            res = res * (z - x[i]) + a[i];
+            res *= (z - x[i]) + a[i];
         }
         return res;
     }
